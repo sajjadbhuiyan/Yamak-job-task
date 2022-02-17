@@ -6,6 +6,7 @@ body {
   width: 100%;
   align-items: center;
   height: 100vh;
+  font-family: 'Nunito', sans-serif;
 }
 
 .box {

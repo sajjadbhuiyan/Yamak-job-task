@@ -1,21 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Button } from "react-bootstrap";
+import React, { useState, Fragment, useEffect } from "react";
+import { Button, Form, Table } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import { useUserAuth } from "../context/UserAuthContext";
-import { DriverLish } from "./DriverLish";
 
-// getting the values of local storage
-const getDatafromLS=()=>{
-  const data = localStorage.getItem('drivers');
-  if(data){
-    return JSON.parse(data);
-  }
-  else{
-    return []
-  }
-}
+
+import EditableRow from "./EditableRow";
+import ReadOnlyRow from "./ReadOnlyRow";
+
 
 const Home = () => {
+
+  // ======Authenticatio======
   const { logOut, user } = useUserAuth();
   const navigate = useNavigate();
   const handleLogout = async () => {
@@ -27,59 +22,152 @@ const Home = () => {
     }
   };
 
-    // main array of objects state || Drivers state || Drivers array of objects
-    const [drivers, setDrivers]=useState(getDatafromLS());
+  // =====Authentication End=======
 
-    // input field states
-    const [firstName, setFirstName]=useState('');
-    const [lastName, setLastName]=useState('');
-    const [dob, setDob]=useState('');
-    const [license, setLicense]=useState('');
-    const [email, setEmail]=useState('');
-    const [phone, setPhone]=useState('');
-    const [expireDate, setExpireDate]=useState('');
-  
-    console.log(email)
-    // form submit event
-    const handleAddBookSubmit=(e)=>{
-      e.preventDefault();
-      // creating an object
-      let driver={
-        firstName,
-        lastName,
-        dob,
-        license,
-        email,
-        phone,
-        expireDate,
-        isbn: new Date().getTime().toString(),
-      }
-      setDrivers([...drivers,driver]);
-      setFirstName('');
-      setLastName('');
-      setDob('');
-      setLicense('');
-      setEmail('');
-      setPhone('');
-      setExpireDate('');
+
+  // =======Driver add and List=======
+
+  const getDatafromLS=()=>{
+    const data = localStorage.getItem('drivers');
+    if(data){
+      return JSON.parse(data);
     }
-  
-    // delete Driver from LS
-    const deleteDriver=(isbn)=>{
-      const filteredDrivers=drivers.filter((element,index)=>{
-        return element.isbn !== isbn
-      })
-      setDrivers(filteredDrivers);
+    else{
+      return []
     }
-  
-    // saving data to local storage
-    useEffect(()=>{
-      localStorage.setItem('drivers',JSON.stringify(drivers));
-    },[drivers])
+  }
+
+  const [contacts, setContacts] = useState(getDatafromLS());
+  console.log(contacts)
+  const [addFormData, setAddFormData] = useState({
+    firstName: "",
+    lastName: "",
+    bod: "",
+    license: '',
+    expiration:'',
+    phoneNumber: "",
+    email: "",
+  });
+
+  const [editFormData, setEditFormData] = useState({
+    firstName: "",
+    lastName: "",
+    bod: "",
+    license:'',
+    expiration:'',
+    phoneNumber: "",
+    email: "",
+  });
+
+  const [editContactId, setEditContactId] = useState(null);
+
+  const handleAddFormChange = (event) => {
+    event.preventDefault();
+
+    const fieldName = event.target.getAttribute("name");
+    const fieldValue = event.target.value;
+
+    const newFormData = { ...addFormData };
+    newFormData[fieldName] = fieldValue;
+
+    setAddFormData(newFormData);
+  };
+
+  const handleEditFormChange = (event) => {
+    event.preventDefault();
+
+    const fieldName = event.target.getAttribute("name");
+    const fieldValue = event.target.value;
+
+    const newFormData = { ...editFormData };
+    newFormData[fieldName] = fieldValue;
+
+    setEditFormData(newFormData);
+  };
+
+  const handleAddFormSubmit = (event) => {
+    event.preventDefault();
+
+    const newContact = {
+      id: new Date().getTime().toString(),
+      firstName: addFormData.firstName,
+      lastName: addFormData.lastName,
+      bod: addFormData.bod,
+      license:addFormData.license,
+      expiration:addFormData.expiration,
+      phoneNumber: addFormData.phoneNumber,
+      email: addFormData.email,
+    };
+
+    const newContacts = [...contacts, newContact];
+    setContacts(newContacts);
+  };
+
+  const handleEditFormSubmit = (event) => {
+    event.preventDefault();
+
+    const editedContact = {
+      id: editContactId,
+      firstName: editFormData.firstName,
+      lastName: editFormData.lastName,
+      bod: editFormData.bod,
+      license:editFormData.license,
+      expiration:editFormData.expiration,
+      phoneNumber: editFormData.phoneNumber,
+      email: editFormData.email,
+    };
+
+    const newContacts = [...contacts];
+
+    const index = contacts.findIndex((contact) => contact.id === editContactId);
+
+    newContacts[index] = editedContact;
+
+    setContacts(newContacts);
+    setEditContactId(null);
+  };
+
+  const handleEditClick = (event, contact) => {
+    event.preventDefault();
+    setEditContactId(contact.id);
+
+    const formValues = {
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      bod: contact.bod,
+      license:contact.license,
+      expiration:contact.expiration,
+      phoneNumber: contact.phoneNumber,
+      email: contact.email,
+    };
+
+    setEditFormData(formValues);
+  };
+
+  const handleCancelClick = () => {
+    setEditContactId(null);
+  };
+
+  const handleDeleteClick = (contactId) => {
+    const newContacts = [...contacts];
+
+    const index = contacts.findIndex((contact) => contact.id === contactId);
+
+    newContacts.splice(index, 1);
+
+    setContacts(newContacts);
+  };
+
+  useEffect(()=>{
+    localStorage.setItem('drivers',JSON.stringify(contacts));
+  },[contacts])
+
+
+   
 
   return (
     <>
-      <div className="p-4 box mt-3 text-center">
+      <div className="p-4 box text-center">
         Hello Welcome to YAMAK <br />
         {user && user.email}
       </div>
@@ -88,80 +176,121 @@ const Home = () => {
           Log out
         </Button>
       </div>
+      <br></br>
 
-      <div className=''>
-      <h1>Driver Add</h1>
-      <p>Add and view your Driver using local storage</p>
-      <div className='main'>
+      {/* ======Form part start====== */}
 
-        <div className='form-container'>
-          <form autoComplete="off" className='form-group'
-          onSubmit={handleAddBookSubmit}>
-            <label> First name</label>
-            <input type="text" className='form-control' required
-            onChange={(e)=>setFirstName(e.target.value)} value={firstName}></input>
+      <div className="app-container">
+      <form onSubmit={handleEditFormSubmit}>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>DOB</th>
+              <th>License No</th>
+              <th>Expiration Date</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contacts.map((contact) => (
+              <Fragment>
+                {editContactId === contact.id ? (
+                  <EditableRow
+                    editFormData={editFormData}
+                    handleEditFormChange={handleEditFormChange}
+                    handleCancelClick={handleCancelClick}
+                  />
+                ) : (
+                  <ReadOnlyRow
+                    contact={contact}
+                    handleEditClick={handleEditClick}
+                    handleDeleteClick={handleDeleteClick}
+                  />
+                )}
+              </Fragment>
+            ))}
+          </tbody>
+        </Table>
+      </form>
+
+      <center>
+        <h1>Add a Driver Info</h1>
+        <div style={{width:"700px"}}>
+     
+          <Form onSubmit={handleAddFormSubmit}>
+            <Form.Control
+              type="text"
+              name="firstName"
+              required="required"
+              placeholder="First Name"
+              onChange={handleAddFormChange}
+            />
+
             <br></br>
-            <label>Last Name</label>
-            <input type="text" className='form-control' required
-            onChange={(e)=>setLastName(e.target.value)} value={lastName}></input>
+            <Form.Control
+              type="text"
+              name="lastName"
+              required="required"
+              placeholder="Last Name"
+              onChange={handleAddFormChange}
+            />
             <br></br>
-            <label>DOB</label>
-            <input type="text" className='form-control' required
-            onChange={(e)=>setDob(e.target.value)} value={dob}></input>
+
+            <Form.Control
+              type="text"
+              name="bod"
+              required="required"
+              placeholder="BOD"
+              onChange={handleAddFormChange}
+            />
             <br></br>
-            <label>License No</label>
-            <input type="number" className='form-control' required
-            onChange={(e)=>setLicense(e.target.value)} value={license}></input>
+
+            <Form.Control
+              type="text"
+              name="license"
+              required="required"
+              placeholder="License"
+              onChange={handleAddFormChange}
+            />
             <br></br>
-            <label>Email</label>
-            <input type="email" className='form-control' required
-            onChange={(e)=>setEmail(e.target.value)} value={email}></input>
+
+            <Form.Control
+              type="date"
+              name="expiration"
+              required="required"
+              placeholder="Expiration Date"
+              onChange={handleAddFormChange}
+            />
             <br></br>
-            <label>Phone</label>
-            <input type="text" className='form-control' required
-            onChange={(e)=>setPhone(e.target.value)} value={phone}></input>
+
+            <Form.Control
+              type="text"
+              name="phoneNumber"
+              required="required"
+              placeholder="Enter a phone number..."
+              onChange={handleAddFormChange}
+            />
             <br></br>
-            <label>Expiration</label>
-            <input type="date" className='form-control' required
-            onChange={(e)=>setExpireDate(e.target.value)} value={expireDate}></input>
+
+            <Form.Control
+              type="email"
+              name="email"
+              required="required"
+              placeholder="Enter an email..."
+              onChange={handleAddFormChange}
+            />
             <br></br>
-            <button type="submit" className='btn btn-success btn-md'>
-              ADD
-            </button>
-          </form>
+            <button style={{width:"700px"}} className="btn btn-success" type="submit">Add</button>
+          </Form>
         </div>
-
-        <div className='view-container'>
-          {drivers.length>0&&<>
-            <div className='table-responsive'>
-              <table className='table'>
-                <thead>
-                  <tr>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>DOB</th>
-                    <th>License</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Expiration</th>
-                    <th>Delete</th>
-                    <th>Edit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <DriverLish drivers={drivers} deleteBook={deleteDriver}/>
-                </tbody>
-              </table>
-            </div>
-            <button className='btn btn-danger btn-md'
-            onClick={()=>setDrivers([])}>Remove All</button>
-          </>}
-          {drivers.length < 1 && <div>No Drivers are added yet</div>}
-        </div>
-
-      </div>
+      </center>
+     
     </div>
-      
+     
     </>
   );
 };

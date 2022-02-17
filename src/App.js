@@ -9,7 +9,7 @@ import { UserAuthContextProvider } from "./context/UserAuthContext";
 
 function App() {
   return (
-    <div style={{ width: "1200px" }}>
+    <div className="py-5" style={{ width: "1200px" }}>
       <Row>
         <Col>
           <UserAuthContextProvider>
