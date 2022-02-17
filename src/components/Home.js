@@ -51,7 +51,8 @@ const Home = () => {
         license,
         email,
         phone,
-        expireDate
+        expireDate,
+        isbn: new Date().getTime().toString(),
       }
       setDrivers([...drivers,driver]);
       setFirstName('');
@@ -144,6 +145,7 @@ const Home = () => {
                     <th>Phone</th>
                     <th>Expiration</th>
                     <th>Delete</th>
+                    <th>Edit</th>
                   </tr>
                 </thead>
                 <tbody>

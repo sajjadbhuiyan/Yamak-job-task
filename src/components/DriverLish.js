@@ -1,6 +1,7 @@
 import React from 'react'
 import {Icon} from 'react-icons-kit'
 import {trash} from 'react-icons-kit/feather/trash'
+import {feather} from 'react-icons-kit/feather'
 
 export const DriverLish = ({drivers,deleteBook}) => {
     
@@ -16,6 +17,9 @@ export const DriverLish = ({drivers,deleteBook}) => {
             <td>{driver.expireDate}</td>
             <td className='delete-btn' onClick={()=>deleteBook(driver.isbn)}>
                 <Icon icon={trash}/>
+            </td> 
+            <td className='delete-btn' onClick={()=>deleteBook(driver.isbn)}>
+                <Icon icon={feather}/>
             </td>           
         </tr>            
     

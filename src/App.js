@@ -9,7 +9,7 @@ import { UserAuthContextProvider } from "./context/UserAuthContext";
 
 function App() {
   return (
-    <Container style={{ width: "400px" }}>
+    <div style={{ width: "1200px" }}>
       <Row>
         <Col>
           <UserAuthContextProvider>
@@ -22,13 +22,13 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/" element={<Login />} />
+               <Route path="/" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
             </Routes>
           </UserAuthContextProvider>
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 }
 
